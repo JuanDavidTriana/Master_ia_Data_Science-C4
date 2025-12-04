@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Procesar CSV</title>
+</head>
+<body>
+
+<h2>Subir CSV y descargar archivo procesado</h2>
+
+<input type="file" id="csvFile" accept=".csv"><br><br>
+<button onclick="enviarCSV()">Enviar y Descargar</button>
+
+<script>
+async function enviarCSV() {
+    const fileInput = document.getElementById('csvFile');
+    const file = fileInput.files[0];
+
+    if (!file) {
+        alert("Selecciona un archivo CSV primero");
+        return;
+    }
+
+    const formData = new FormData();
+    formData.append("file", file);
+
+    try {
+        const response = await fetch("http://127.0.0.1:5000/procesar_csv_limpiar_1", {
+            method: "POST",
+            body: formData
+        });
+
+        if (!response.ok) {
+            const error = await response.json();
+            alert("Error: " + (error.error || "Error procesando archivo"));
+            return;
+        }
+
+        // Recibir archivo como blob
+        const blob = await response.blob();
+
+        // Crear descarga del archivo
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = "resultado.csv";
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+        window.URL.revokeObjectURL(url);
+
+    } catch (error) {
+        console.error("Error:", error);
+        alert("Error en la petición");
+    }
+}
+</script>
+
+</body>
+</html>
